@@ -83,75 +83,152 @@
 // f();
 
 
+// #include <iostream>
+// #include <string>
+// using namespace std;
+// class MyClass {
+//     public:
+//         int age;
+//         string name;
+//
+//         MyClass() {cout<<"wucan"<<endl;}
+//         MyClass(int age,string name):age(age),name(move(name)) {
+//             //这里调用move完全没问题
+//             //构造函数体内的 name 只是一个局部变量，生命周期只在构造函数内有效，执行完构造函数就会销毁。
+//             //所以：我们完全可以“ 掏空”它（move 走它的内部资源），不会影响调用者看到的对象
+//             cout << "youcan" << endl;
+//         }
+//
+//         MyClass(const MyClass &obj): age(obj.age), name(obj.name) {
+//             //我靠，我这个错误以前一直没发现，还以为自己很专业呢md。
+//             //name(move(name))，本来对于这个string类想调用拷贝构造呢，提高效率
+//             //但是形参是const MyClass &obj类型！！！
+//             //也就是说obj.name其实是const string 类型，而move之后变成const string &&类型
+//             //string 的 移动构造函数 接收的是 string&&，不能接收 const string&&。
+//             //所以这里调用的不是移动构造，而是拷贝构造（对于name这个成员）！
+//             //所以这里别加move，现代C++风格，拷贝就是拷贝，老老实实完成复制，同时不会修改原对象（const不能省略）
+//             cout << "kaobei" << endl;
+//         }
+//
+//         MyClass(MyClass &&obj) {//伪拷贝，并没有掏空原对象的资源
+//             age = obj.age;
+//             name = move(obj.name);
+//             cout<<"yidong"<<endl;
+//         }
+//         ~MyClass(){cout<<"xigou"<<endl;}
+// };
+// int main() {
+//     int x=5;
+//     auto f=[y=x+3.5](){cout<<y<<endl;};//初始化捕获，在C++14可以直接在捕获列表里初始化变量
+//     f();
+//
+//     //测试自定义拷贝构造+move会怎么样
+//     MyClass myObj(18,"TOM");
+//     MyClass myObj2=myObj;
+//     cout<<myObj2.name<<endl;
+//     cout<<myObj.name<<endl;
+//
+//
+//
+//     auto f1 = [&myObj]() {//当然捕获列表里面也可以捕获自定义类对象，按值捕获，按引用捕获
+//         cout<<myObj.age<<endl;
+//         cout<<myObj.name<<endl;
+//         myObj.age+=1;
+//     };
+//     f1();
+//
+//     auto f2 = [temp = myObj]() {//按值捕获，会调用拷贝构造，temp是MyClass类型
+//         cout<<temp.age<<endl;
+//         // temp.age=18;
+//     };
+//     f2();
+//
+//     auto f3 = [temp = &myObj]() {//按引用捕获，不会调用任何构造函数，temp是MyClass*类型
+//         cout<<temp->age<<endl;
+//     };
+//     f3();
+//
+//     auto f4 = [temp = move(myObj)]() {//调用拷贝构造，掏空myobj的资源给temp，同时temp在Lambda结束后销毁
+//         cout<<temp.age<<endl;
+//     };
+//     f4();
+//
+//     return 0;
+// }
+
+
+// #include <iostream>
+// using namespace std;
+// int main() {
+//     int x=5;
+//     auto f = [x](int a,int b) ->int {return a+b+x;};
+//     cout<<f(1,2)<<endl;
+//     return 0;
+// }
+
+
+//Lambda配合STL算法
+// #include <iostream>
+// #include <vector>
+// #include <algorithm>
+// using namespace std;
+// bool cmp(int a, int b) {
+//     return a > b;
+// }
+// int main() {
+//     // vector<int>v{3,1,5,4,7,6};
+//     // sort(v.begin(), v.end(),cmp);
+//     // for (auto x:v) {
+//     //     cout<<x<<" ";
+//     // }
+//     vector<int>v{3,1,5,4,7,6};
+//     sort(v.begin(), v.end(), [](int a,int b){return a>b;});
+//     for (auto i : v) {
+//         cout << i << endl;
+//     }
+//     return 0;
+// }
+
+
+// #include <iostream>
+// using namespace std;
+//
+// // void do_work(void (*callback)(int)) {
+// //     for (int i = 0; i < 3; i++) {
+// //         callback(i);  // 回调
+// //     }
+// // }
+//
+//
+// void my_callback(int x) {
+//     cout << "huidiao:" << x << endl;
+// }
+//
+// void my_callback2(int x) {
+//     cout << "huidiao2:"<< x*2 << endl;
+// }
+// int main() {
+//     // do_work(my_callback);  // 传函数指针
+//     // do_work(my_callback2);
+//
+//     return 0;
+// }
+
+
+
+//使用Lambda进行函数回调
+#include <functional>
 #include <iostream>
-#include <string>
 using namespace std;
-class MyClass {
-    public:
-        int age;
-        string name;
+void do_work(std::function<void(int)> callback) {
+    for (int i = 0; i < 3; i++) callback(i);
+}
 
-        MyClass() {cout<<"wucan"<<endl;}
-        MyClass(int age,string name):age(age),name(move(name)) {
-            //这里调用move完全没问题
-            //构造函数体内的 name 只是一个局部变量，生命周期只在构造函数内有效，执行完构造函数就会销毁。
-            //所以：我们完全可以“ 掏空”它（move 走它的内部资源），不会影响调用者看到的对象
-            cout << "youcan" << endl;
-        }
-
-        MyClass(const MyClass &obj): age(obj.age), name(obj.name) {
-            //我靠，我这个错误以前一直没发现，还以为自己很专业呢md。
-            //name(move(name))，本来对于这个string类想调用拷贝构造呢，提高效率
-            //但是形参是const MyClass &obj类型！！！
-            //也就是说obj.name其实是const string 类型，而move之后变成const string &&类型
-            //string 的 移动构造函数 接收的是 string&&，不能接收 const string&&。
-            //所以这里调用的不是移动构造，而是拷贝构造（对于name这个成员）！
-            //所以这里别加move，现代C++风格，拷贝就是拷贝，老老实实完成复制，同时不会修改原对象（const不能省略）
-            cout << "kaobei" << endl;
-        }
-
-        MyClass(MyClass &&obj) {//伪拷贝，并没有掏空原对象的资源
-            age = obj.age;
-            name = move(obj.name);
-            cout<<"yidong"<<endl;
-        }
-        ~MyClass(){cout<<"xigou"<<endl;}
-};
 int main() {
-    int x=5;
-    auto f=[y=x+3.5](){cout<<y<<endl;};//初始化捕获，在C++14可以直接在捕获列表里初始化变量
-    f();
+    // 1. 普通函数
+    do_work([](int x){ cout << "lambda: " << x << endl; });//返回值和参数列表要和std::function里面的一样
 
-    //测试自定义拷贝构造+move会怎么样
-    MyClass myObj(18,"TOM");
-    MyClass myObj2=myObj;
-    cout<<myObj2.name<<endl;
-    cout<<myObj.name<<endl;
-
-
-
-    auto f1 = [&myObj]() {//当然捕获列表里面也可以捕获自定义类对象，按值捕获，按引用捕获
-        cout<<myObj.age<<endl;
-        cout<<myObj.name<<endl;
-        myObj.age+=1;
-    };
-    f1();
-
-    auto f2 = [temp = myObj]() {//按值捕获，会调用拷贝构造，temp是MyClass类型
-        cout<<temp.age<<endl;
-        // temp.age=18;
-    };
-    f2();
-
-    auto f3 = [temp = &myObj]() {//按引用捕获，不会调用任何构造函数，temp是MyClass*类型
-        cout<<temp->age<<endl;
-    };
-    f3();
-
-    auto f4 = [temp = move(myObj)]() {//调用拷贝构造，掏空myobj的资源给temp，同时temp在Lambda结束后销毁
-        cout<<temp.age<<endl;
-    };
-    f4();
-
-    return 0;
+    // 2. 捕获外部变量的 lambda
+    int base = 10;
+    do_work([base](int x){ cout << "base + x = " << base + x << endl; });
 }
