@@ -110,7 +110,7 @@ class MyClass {
             cout << "kaobei" << endl;
         }
 
-        MyClass(MyClass &&obj) {
+        MyClass(MyClass &&obj) {//伪拷贝，并没有掏空原对象的资源
             age = obj.age;
             name = move(obj.name);
             cout<<"yidong"<<endl;
@@ -123,35 +123,35 @@ int main() {
     f();
 
     //测试自定义拷贝构造+move会怎么样
-    // MyClass myObj(18,"TOM");
-    // MyClass myObj2=myObj;
-    // cout<<myObj2.name<<endl;
-    // cout<<myObj.name<<endl;
+    MyClass myObj(18,"TOM");
+    MyClass myObj2=myObj;
+    cout<<myObj2.name<<endl;
+    cout<<myObj.name<<endl;
 
 
 
-    // auto f1 = [&myObj]() {//当然捕获列表里面也可以捕获自定义类对象，按值捕获，按引用捕获
-    //     cout<<myObj.age<<endl;
-    //     cout<<myObj.name<<endl;
-    //     myObj.age+=1;
-    // };
-    // f1();
-    //
-    // auto f2 = [temp = myObj]() {//按值捕获，会调用拷贝构造，temp是MyClass类型
-    //     cout<<temp.age<<endl;
-    //     // temp.age=18;
-    // };
-    // f2();
-    //
-    // auto f3 = [temp = &myObj]() {//按引用捕获，不会调用任何构造函数，temp是MyClass*类型
-    //     cout<<temp->age<<endl;
-    // };
-    // f3();
-    //
-    // auto f4 = [temp = move(myObj)]() {//
-    //     cout<<temp.age<<endl;
-    // };
-    // f4();
+    auto f1 = [&myObj]() {//当然捕获列表里面也可以捕获自定义类对象，按值捕获，按引用捕获
+        cout<<myObj.age<<endl;
+        cout<<myObj.name<<endl;
+        myObj.age+=1;
+    };
+    f1();
+
+    auto f2 = [temp = myObj]() {//按值捕获，会调用拷贝构造，temp是MyClass类型
+        cout<<temp.age<<endl;
+        // temp.age=18;
+    };
+    f2();
+
+    auto f3 = [temp = &myObj]() {//按引用捕获，不会调用任何构造函数，temp是MyClass*类型
+        cout<<temp->age<<endl;
+    };
+    f3();
+
+    auto f4 = [temp = move(myObj)]() {//调用拷贝构造，掏空myobj的资源给temp，同时temp在Lambda结束后销毁
+        cout<<temp.age<<endl;
+    };
+    f4();
 
     return 0;
 }
